@@ -6,7 +6,8 @@ var cstmrProd= {
     id:0,
     stock:0,
     price:0,
-    total:0    
+    total:0,
+    sales:0,    
 }
 
 connection = mysql.createConnection({
@@ -73,6 +74,7 @@ function askCustomer2(){
         }
     }).then(function(inqresp){              
         if (Number(inqresp.num) <= cstmrProd.stock){
+            cstmrProd.sales=Number(inqresp.num)*cstmrProd.price;
             cstmrProd.total+=Number(inqresp.num)*cstmrProd.price;
             cstmrProd.stock-=Number(inqresp.num);       
             updateProds();  
@@ -106,7 +108,12 @@ function displayRow(product,t){
 }
 
 function updateProds(){
-    connection.query("UPDATE products SET products.stock_quantity = ? WHERE products.item_id = ?",[cstmrProd.stock,cstmrProd.id],
+    connection.query("UPDATE products SET ?  WHERE  ?",[{
+        stock_quantity: cstmrProd.stock,
+        product_sales: cstmrProd.sales
+        },
+        {item_id: cstmrProd.id
+        }],
     function(err,sqlresp){  
         console.log("Your current total is $" + cstmrProd.total );     
         askContinue(1);        
